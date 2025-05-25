@@ -174,7 +174,9 @@
                                 }
                             @endphp
                             @include('element.claimbox',['claim'=>$claim,'idx'=>$idx,'last_row'=>$last_row])
-                            @php($idx++)
+                            @php
+                                $idx++
+                            @endphp
                         @endforeach
                         <div class="clear"></div>
                     </div>
@@ -201,7 +203,9 @@
                     }
                 @endphp
                 @include('element.claimbox',['claim'=>$claim,'idx'=>$idx,'last_row'=>$last_row])
-                @php($idx++)
+                @php
+                    $idx++
+                @endphp
             @endforeach
             <div class="clear"></div>
         </div>

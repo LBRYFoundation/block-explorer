@@ -19,6 +19,8 @@ class AuxCommand extends Command{
 
     const bittrex = 'https://api.bittrex.com/v3/markets/LBC-BTC/ticker';
 
+    const coingeckoURL = 'https://api.coingecko.com/api/v3/simple/price?ids=lbry-credits&vs_currencies=btc';
+
     const blockchainticker = 'https://blockchain.info/ticker';
 
     const lbcpricekey = 'lbc.price';
@@ -170,11 +172,13 @@ class AuxCommand extends Command{
                 }
             }
 
-            $btrxjson = null; //TODO json_decode(self::curl_get(self::bittrex));
+            $coingeckoJSON = Cache::remember('coingecko',60,static function(){
+                return json_decode(self::curl_get(self::coingeckoURL));
+            });
             $blckjson = json_decode(self::curl_get(self::blockchainticker));
 
-            if ($btrxjson) {
-                $btc = $btrxjson->bidRate;
+            if ($coingeckoJSON) {
+                $btc = $coingeckoJSON->{'lbry-credits'}->btc;
                 $usd = 0;
                 if (isset($blckjson->USD)) {
                     $usd = $btc * $blckjson->USD->buy;
@@ -195,7 +199,7 @@ class AuxCommand extends Command{
                     }
                 }
             } else {
-                echo "bittrex requrest returned an invalid result.\n";
+                echo "CoinGecko requrest returned an invalid result.\n";
             }
         } catch (Exception $e) {
             print_r($e);
