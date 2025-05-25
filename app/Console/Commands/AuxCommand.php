@@ -1,14 +1,14 @@
 <?php
 namespace App\Console\Commands;
 
-use App\Models\Address;
-use App\Models\TagAddressRequest;
-
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
 use PDO;
+
+use App\Models\Address;
+use App\Models\TagAddressRequest;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -43,15 +43,12 @@ class AuxCommand extends Command{
      */
     protected $signature = 'explorer:aux {function?}';
 
-    public function __construct(){
-        parent::__construct();
-        self::$rpcurl = config('lbry.rpc_url');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle(): void{
+        self::$rpcurl = config('lbry.rpc_url');
+
         $function = $this->argument('function');
         if($function){
             $this->$function();
@@ -173,7 +170,7 @@ class AuxCommand extends Command{
                 }
             }
 
-            $btrxjson = json_decode(self::curl_get(self::bittrex));
+            $btrxjson = null; //TODO json_decode(self::curl_get(self::bittrex));
             $blckjson = json_decode(self::curl_get(self::blockchainticker));
 
             if ($btrxjson) {
