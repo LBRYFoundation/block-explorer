@@ -1,28 +1,28 @@
 <?php
 namespace App\Console\Commands;
 
+use DateTime;
+use DateTimeZone;
+use Exception;
+use InvalidArgumentException;
+use PDO;
+use RedisException;
+use Throwable;
+
 use App\Models\Address;
 use App\Models\Block;
-
 use App\Models\Claim;
 use App\Models\ClaimStream;
 use App\Models\Input;
 use App\Models\Output;
 use App\Models\Transaction;
-use Carbon\Carbon;
-use DateTime;
-use DateTimeZone;
-use Exception;
+
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use InvalidArgumentException;
+
 use Mdanter\Ecc\EccFactory;
-use PDO;
-use RedisException;
-use Throwable;
 
 class BlockCommand extends Command{
 
@@ -47,16 +47,13 @@ class BlockCommand extends Command{
      */
     protected $signature = 'explorer:block {function?}';
 
-    public function __construct(){
-        parent::__construct();
-        self::$redis = Redis::connection()->client();
-        self::$rpcurl = config('lbry.rpc_url');
-    }
-
     /**
      * Execute the console command.
      */
     public function handle(): void{
+        self::$redis = Redis::connection()->client();
+        self::$rpcurl = config('lbry.rpc_url');
+
         $function = $this->argument('function');
         if($function){
             $this->$function();
@@ -1131,7 +1128,6 @@ class BlockCommand extends Command{
         self::lock('parsenewblocks');
 
         echo "Parsing new blocks...\n";
-        self::$redis = Redis::connection()->client();
         try {
             // Get the best block hash
             $req = ['method' => 'getbestblockhash', 'params' => [],'id'=>rand()];
