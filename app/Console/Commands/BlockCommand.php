@@ -32,8 +32,8 @@ class BlockCommand extends Command{
 
     const scriptAddress = [5, 122];
 
-    //public static string $redisurl;
-    public static string $rpcurl;
+    protected static $redis;
+    public static $rpcurl;
 
     /**
      * The console command description.
@@ -49,7 +49,7 @@ class BlockCommand extends Command{
 
     public function __construct(){
         parent::__construct();
-        //self::$redisurl = config('database.redis.default.url');
+        self::$redis = Redis::connection()->client();
         self::$rpcurl = config('lbry.rpc_url');
     }
 
@@ -155,10 +155,9 @@ class BlockCommand extends Command{
 
         // start with all txs
         $decoder_url = 'http://127.0.0.1:5000';
-        $redis = Redis::connection()->client();
         $conn = DB::connection();
         $redis_key = 'claim.oid';
-        $last_claim_oid = $redis->exists($redis_key) ? $redis->get($redis_key) : 0;
+        $last_claim_oid = self::$redis->exists($redis_key) ? self::$redis->get($redis_key) : 0;
         try {
             $stmt = $conn->getPdo()->query('SELECT COUNT(Id) AS RecordCount FROM Outputs WHERE Id > ?', [$last_claim_oid]);
             $count = min(500000, $stmt->fetch(PDO::FETCH_OBJ)->RecordCount);
@@ -303,7 +302,7 @@ class BlockCommand extends Command{
                     echo "[$idx_str/$count] no claim found for [$out->Hash:$vout]. Skipping.\n";
                 }
 
-                $redis->set($redis_key, $out->Id);
+                self::$redis->set($redis_key, $out->Id);
             }
         } catch (Exception $e) {
             // continue
@@ -407,11 +406,10 @@ class BlockCommand extends Command{
     public function fixzerooutputs(): void{
         self::lock('zerooutputs');
 
-        $redis = Redis::connection()->client();
         $conn = DB::connection();
 
         /** 2017-06-12 21:38:07 **/
-        //$last_fixed_txid = $redis->exists('fix.txid') ? $redis->get('fix.txid') : 0;
+        //$last_fixed_txid = self::$redis->exists('fix.txid') ? self::$redis->get('fix.txid') : 0;
         try {
             $stmt = $conn->getPdo()->query('SELECT Id FROM Transactions WHERE Created >= ? AND Created <= ? LIMIT 1000000', ['2017-06-15 20:44:50', '2017-06-16 08:02:09']);
             $txids = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -663,7 +661,7 @@ class BlockCommand extends Command{
                     }
                 }
 
-                //$redis->set('fix.txid', $txid);
+                //self::$redis->set('fix.txid', $txid);
                 $diff_ms = (round(microtime(true) * 1000)) - $start_ms;
                 $total_diff += $diff_ms;
                 echo "update took {$diff_ms}ms. Total {$total_diff} ms.\n";
@@ -1026,7 +1024,6 @@ class BlockCommand extends Command{
         //$conn->execute('SET foreign_key_checks = 0');
         //$conn->execute('SET unique_checks = 0');
 
-        $redis = Redis::connection()->client();
         try {
             $unproc_blocks = Block::query()->select(['Id', 'Height', 'Hash', 'TransactionHashes', 'BlockTime'])->where('TransactionsProcessed',0)->orderBy('Height')->get();
             foreach ($unproc_blocks as $min_block) {
@@ -1066,8 +1063,8 @@ class BlockCommand extends Command{
                         $total_diff += $diff_ms;
                         echo "tx took {$diff_ms}ms. Total {$total_diff}ms. ";
 
-                        if (!$data_error && $redis && $redis->sismember(self::mempooltxkey, $tx_hash)) {
-                            $redis->srem(self::mempooltxkey, $tx_hash);
+                        if (!$data_error && self::$redis && self::$redis->sismember(self::mempooltxkey, $tx_hash)) {
+                            self::$redis->srem(self::mempooltxkey, $tx_hash);
                             echo "Removed $tx_hash from redis mempooltx.\n";
                         }
 
@@ -1107,8 +1104,8 @@ class BlockCommand extends Command{
                     $upd_entity->save();
                     echo "Done.\n";
 
-                    if ($redis && $redis->sismember(self::mempooltxkey, $tx_hash)) {
-                        $redis->srem(self::mempooltxkey, $tx_hash);
+                    if (self::$redis && self::$redis->sismember(self::mempooltxkey, $tx_hash)) {
+                        self::$redis->srem(self::mempooltxkey, $tx_hash);
                         echo "Removed $tx_hash from redis mempooltx.\n";
                     }
                 } else {
@@ -1134,7 +1131,7 @@ class BlockCommand extends Command{
         self::lock('parsenewblocks');
 
         echo "Parsing new blocks...\n";
-        $redis = Redis::connection()->client();
+        self::$redis = Redis::connection()->client();
         try {
             // Get the best block hash
             $req = ['method' => 'getbestblockhash', 'params' => [],'id'=>rand()];
@@ -1279,8 +1276,8 @@ class BlockCommand extends Command{
                         }
 
                         // Remove from redis if present
-                        if (!$data_error && $redis && $redis->sismember(self::mempooltxkey, $tx_hash)) {
-                            $redis->srem(self::mempooltxkey, $tx_hash);
+                        if (!$data_error && self::$redis && self::$redis->sismember(self::mempooltxkey, $tx_hash)) {
+                            self::$redis->srem(self::mempooltxkey, $tx_hash);
                             echo "Removed $tx_hash from redis mempooltx.\n";
                         }
                     }
@@ -1305,7 +1302,6 @@ class BlockCommand extends Command{
         self::lock('forevermempool');
 
         $conn = DB::connection();
-        $redis = Redis::connection()->client();
 
         while (true) {
             try {
@@ -1318,16 +1314,16 @@ class BlockCommand extends Command{
 
                 if (count($txs) === 0) {
                     // If no transactions found, that means there's nothing in the mempool. Clear redis
-                    if ($redis) {
-                        $redis->del(self::mempooltxkey);
+                    if (self::$redis) {
+                        self::$redis->del(self::mempooltxkey);
                         echo "Empty rawmempool. Cleared mempool txs from redis.\n";
                     }
                 }
 
                 foreach ($txs as $tx_hash) {
                     // Check redis mempool txs
-                    if ($redis && $redis->exists(self::mempooltxkey)) {
-                        if ($redis->sismember(self::mempooltxkey, $tx_hash)) {
+                    if (self::$redis && self::$redis->exists(self::mempooltxkey)) {
+                        if (self::$redis->sismember(self::mempooltxkey, $tx_hash)) {
                             echo "Found processed tx hash: $tx_hash. Skipping.\n";
                             continue;
                         }
@@ -1354,8 +1350,8 @@ class BlockCommand extends Command{
                         $conn->commit();
 
                         // Save to redis to prevent the DB from behing hit again
-                        if ($redis) {
-                            $redis->sadd(self::mempooltxkey, $tx_hash);
+                        if (self::$redis) {
+                            self::$redis->sadd(self::mempooltxkey, $tx_hash);
                         }
                     }
                 }
