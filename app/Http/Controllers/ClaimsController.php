@@ -22,11 +22,11 @@ class ClaimsController extends Controller{
                 $order = 'RAND() ASC';
                 break;
             case 'oldest':
-                $order = 'Created ASC';
+                $order = 'created_at ASC';
                 break;
             case 'newest':
             default:
-                $order = 'Created DESC';
+                $order = 'created_at DESC';
                 break;
         }
 
@@ -39,22 +39,22 @@ class ClaimsController extends Controller{
         }
 
         $conditions = [
-            ['ThumbnailUrl','IS','NOT NULL'],
-            ['LENGTH(TRIM(ThumbnailUrl))','>',0],
-            ['IsFiltered','<>',1],
+            ['thumbnail_url','IS','NOT NULL'],
+            ['LENGTH(TRIM(thumbnail_url))','>',0],
+            ['is_filtered','<>',1],
         ];
         if ($afterId > 0) {
-            $conditions[] = ['Id','>',$afterId];
+            $conditions[] = ['id','>',$afterId];
         } else if ($beforeId) {
-            $conditions[] = ['Id','<',$beforeId];
+            $conditions[] = ['id','<',$beforeId];
         }
 
         if ($nsfw !== 'true') {
-            $conditions[] = ['IsNSFW','<>',1];
+            $conditions[] = ['is_nsfw','<>',1];
         }
 
         //->contain(['Stream', 'Publisher' => ['fields' => ['Name']]])
-        $claims = Claim::query()->distinct(['ClaimId'])->where($conditions)->limit($pageLimit)->orderByRaw($order)->get();
+        $claims = Claim::query()->distinct(['claim_id'])->where($conditions)->limit($pageLimit)->orderByRaw($order)->get();
 
         return [
             'success' => true,

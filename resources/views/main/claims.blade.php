@@ -56,7 +56,7 @@
 
             $desc = $claim->description;
             if (strlen(trim($desc)) == 0) {
-                $desc = '<em>No description available.</em>';
+                $desc = null;
             } else {
                 $desc = preg_replace('#((https?|ftp|lbry)://([A-Za-z0-9\-\/]+|\S*?\.\S*?))([\s)\[\]{},;"\':<]|\.\s|$)#i','<a href="$1" target="_blank" rel="nofollow">$1</a>$4', $desc);
                 $desc = preg_replace('/(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/is', '<a href="mailto:$0" rel="nofollow">$0</a>', $desc);
@@ -121,7 +121,7 @@
                         <div class="desc">This is an identity claim.</div>
                     @else
                         <div class="title">{{ $claim->title }}</div>
-                        <div class="desc">{{ str_replace("\n", '<br />', $desc) }}</div>
+                        <div class="desc">@if($desc===null)<em>No description available.</em>@else{{ str_replace("\n", '<br />', $desc) }}@endif</div>
 
                         <div class="details">
                             <div class="label half-width">Author</div>

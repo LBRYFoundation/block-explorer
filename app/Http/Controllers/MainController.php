@@ -127,9 +127,8 @@ class MainController extends Controller{
      */
     public function index(): JsonResponse|Response|View{
         $lbcUsdPrice = $this->_getLatestPrice();
-        $blocks = Block::query()->select(['Chainwork','Confirmations','Difficulty','Hash','Height','BlockTime','BlockSize'])->selectRaw('JSON_LENGTH(`TransactionHashes`) AS tx_count')->orderByDesc('Height')->limit(6)->get();
-        $claims = Claim::query()->limit(5)->get();
-        //$claims = $this->Claims->find()->select($this->Claims)->select(['publisher' => 'C.name'])->leftJoin(['C' => 'claim'], ['C.claim_id = Claims.publisher_id'])->order(['Claims.created_at' => 'DESC'])->limit(5)->toArray();
+        $blocks = Block::query()->select(['chainwork', 'confirmations', 'difficulty', 'hash', 'height', 'block_time', 'block_size','tx_count'])->orderByDesc('height')->limit(6)->get();
+        $claims = Claim::query()->leftJoin('claim AS c','c.claim_id','=','claim.publisher_id')->orderByDesc('claim.created_at')->limit(5)->get();
         $hashRate = $this->_formatHashRate($this->_gethashrate());
 
         return self::generateResponse('main.index',[
@@ -166,7 +165,7 @@ class MainController extends Controller{
 //            $count = $stmt->fetch(\PDO::FETCH_OBJ);
             $numClaims = 20000000;
 
-            $stmt = $conn->getPdo()->query('SELECT MAX(Id) AS MaxId FROM Claims');
+            $stmt = $conn->getPdo()->query('SELECT MAX(Id) AS MaxId FROM claim');
             $res = $stmt->fetch(PDO::FETCH_OBJ);
             $maxClaimId = $res->MaxId;
 
@@ -185,7 +184,7 @@ class MainController extends Controller{
             }
 
             $blockedList = json_decode($this->_getBlockedList());
-            $claims = [];//Claim::query()->selectRaw('Name AS Publisher')->addSelect(['publisher' => 'C.name', 'publisher_transaction_hash_id' => 'C.transaction_hash_id', 'publisher_vout' => 'C.vout'])->leftJoin('Claims','claim_id','=','Claims.publisher_id')->where('Claims.id','>',$startLimitId)->where( 'Claims.Id','<=',$endLimitId)->orderByDesc('Id')->get();
+            $claims = Claim::query()->select(['claim.*'])->addSelect(['c.name AS publisher','c.transaction_hash_id AS publisher_transaction_hash_id','c.vout AS publisher_vout'])->leftJoin('claim AS c','c.claim_id','=','claim.publisher_id')->where('claim.id','>',$startLimitId)->where('claim.id','<=',$endLimitId)->orderByDesc('claim.id')->get();
 
             for ($i = 0; $i < count($claims); $i++) {
                 if ($canConvert && $claims[$i]->fee > 0 && $claims[$i]->fee_currency == 'USD') {
@@ -222,7 +221,7 @@ class MainController extends Controller{
                 'claims' => $claims,
             ]);
         } else {
-            $claim = Claim::query()->addSelect(['publisher' => 'C.name'])->leftJoin('Claims','claim_id','=','Claims.publisher_id')->where('Claims.claim_id',$id)->orderByDesc('Claims.created_at')->first();
+            $claim = Claim::query()->select('claim.*')->where('claim.claim_id',$id)->leftJoin('claim AS c','c.claim_id','=','claim.publisher_id')->orderByDesc('claim.created_at')->first();
             if (!$claim) {
                 return Redirect::to('/');
             }
@@ -285,8 +284,8 @@ class MainController extends Controller{
 
     public function realtime(): JsonResponse|Response|View{
         // Load 10 blocks and transactions
-        $blocks = Block::query()->select(['Height','BlockTime'])->selectRaw('JSON_LENGTH(`TransactionHashes`) AS tx_count')->orderByDesc('Height')->limit(10)->get();
-        $transactions = Transaction::query()->select(['Id','Hash','Value','InputCount','OutputCount','TransactionTime','Created'])->orderByDesc('Created')->limit(10)->get();
+        $blocks = Block::query()->select(['height','block_time','tx_count'])->orderByDesc('height')->limit(10)->get();
+        $transactions = Transaction::query()->select(['id','hash','value','input_count','output_count','transaction_time','created_at'])->orderByDesc('created_at')->limit(10)->get();
 
         return self::generateResponse('main.realtime',[
             'blocks' => $blocks,
@@ -299,38 +298,38 @@ class MainController extends Controller{
 
         if(is_numeric($criteria)){
             $height = (int) $criteria;
-            $block = Block::query()->select(['Id'])->where('Height',$height)->first();
+            $block = Block::query()->select(['id'])->where('height',$height)->first();
             if($block){
                 return Redirect::to('/blocks/'.$height);
             }
         }elseif(strlen(trim($criteria)) === 34){
             // Address
-            $address = Address::query()->select(['Id','Address'])->where('Address',$criteria)->first();
+            $address = Address::query()->select(['id','address'])->where('address',$criteria)->first();
             if($address){
-                return Redirect::to('/address/'.$address->Address);
+                return Redirect::to('/address/'.$address->address);
             }
         }elseif(strlen(trim($criteria)) === 40){
             // Claim ID
-            $claim = Claim::query()->select(['ClaimId'])->where('ClaimId',$criteria)->first();
+            $claim = Claim::query()->select(['claim_id'])->where('claim_id',$criteria)->first();
             if($claim){
-                return Redirect::to('/claims/'.$claim->ClaimId);
+                return Redirect::to('/claims/'.$claim->claim_id);
             }
         }elseif(strlen(trim($criteria)) === 64) { // block or tx hash
             // Try block hash first
-            $block = Block::query()->select(['Height'])->where('Hash',$criteria)->first();
+            $block = Block::query()->select(['height'])->where('hash',$criteria)->first();
             if($block){
-                return Redirect::to('/blocks/'.$block->Height);
+                return Redirect::to('/blocks/'.$block->height);
             }else{
-                $tx = Transaction::query()->select(['Hash'])->where('Hash',$criteria)->first();
+                $tx = Transaction::query()->select(['hash'])->where('hash',$criteria)->first();
                 if($tx){
-                    return Redirect::to('/tx/'.$tx->Hash);
+                    return Redirect::to('/tx/'.$tx->hash);
                 }
             }
         }else{
             // finally, try exact claim name match
-            $claims = Claim::query()->distinct('ClaimId')->where('Name',$criteria)->orderByDesc('CreatedAt')->limit(10)->get(); //TODO Fix ordering by BidState (Controlling)
+            $claims = Claim::query()->distinct('claim_id')->where('name',$criteria)->orderByDesc('FIELD(bid_state,"Controlling")')->limit(10)->get();
             if(count($claims)===1){
-                return Redirect::to('/claims/'.$claims[0]->ClaimId);
+                return Redirect::to('/claims/'.$claims[0]->claim_id);
             }
             return self::generateResponse('main.find',[
                 'claims' => $claims,
@@ -348,7 +347,7 @@ class MainController extends Controller{
             $page = intval(request()->query('page'));
 
             $conn = DB::connection();
-            $stmt = $conn->getPdo()->query('SELECT Height AS Total FROM Blocks order by Id desc limit 1');
+            $stmt = $conn->getPdo()->query('SELECT height AS Total FROM block order by id desc limit 1');
             $count = $stmt->fetch(PDO::FETCH_OBJ);
             $numBlocks = $count->Total;
 
@@ -361,8 +360,8 @@ class MainController extends Controller{
             }
 
             $offset = ($page - 1) * $pageLimit;
-            $currentBlock = Block::query()->select(['Height'])->orderByDesc('Height')->first();
-            $blocks = Block::query()->select(['Height', 'Difficulty', 'BlockSize', 'Nonce', 'BlockTime'])->offset($offset)->limit($pageLimit)->orderByDesc('Height')->get();//'tx_count'
+            $currentBlock = Block::query()->select(['height'])->orderByDesc('height')->first();
+            $blocks = Block::query()->select(['height', 'difficulty', 'block_size', 'nonce', 'block_time','tx_count'])->offset($offset)->limit($pageLimit)->orderByDesc('height')->get();
 
             return self::generateResponse('main.blocks',[
                 'currentBlock' => $currentBlock,
@@ -384,7 +383,7 @@ class MainController extends Controller{
             }
 
             // Get the basic block transaction info
-            $txs = Transaction::query()->select(['Transactions.id', 'Transactions.value', 'Transactions.input_count', 'Transactions.output_count', 'Transactions.hash', 'Transactions.version'])->where('Transactions.block_hash_id',$block->hash)->get();
+            $txs = Transaction::query()->select(['id','value','input_count','output_count','hash','version'])->where('block_hash_id',$block->hash)->get();
             $last_block = Block::query()->select(['height'])->orderByDesc('height')->first();
             $confirmations = $last_block->height - $block->height + 1;
 
@@ -399,7 +398,7 @@ class MainController extends Controller{
     public function tx($hash = null): JsonResponse|Response|RedirectResponse|View{
         $sourceAddress = request()->query('address');
 
-        $tx = Transaction::query()->where('Transactions.hash',$hash)->first();
+        $tx = Transaction::query()->where('hash',$hash)->first();
         if (!$tx) {
             return Redirect::to('/');
         }
@@ -636,8 +635,8 @@ class MainController extends Controller{
 
         $conn = DB::connection();
         // get avg block sizes for the time period
-        $stmt = $conn->getPdo()->prepare("SELECT AVG(BlockSize) AS AvgBlockSize, DATE_FORMAT(FROM_UNIXTIME(BlockTime), '$sqlDateFormat') AS TimePeriod " .
-            "FROM Blocks WHERE DATE_FORMAT(FROM_UNIXTIME(BlockTime), '$sqlDateFormat') >= ? GROUP BY TimePeriod ORDER BY TimePeriod ASC");
+        $stmt = $conn->getPdo()->prepare("SELECT AVG(block_size) AS AvgBlockSize, DATE_FORMAT(FROM_UNIXTIME(block_time), '$sqlDateFormat') AS TimePeriod " .
+            "FROM block WHERE DATE_FORMAT(FROM_UNIXTIME(block_time), '$sqlDateFormat') >= ? GROUP BY TimePeriod ORDER BY TimePeriod ASC");
         $stmt->execute([$start->format($dateFormat)]);
         $avgBlockSizes = $stmt->fetchAll(PDO::FETCH_OBJ);
         foreach ($avgBlockSizes as $size) {

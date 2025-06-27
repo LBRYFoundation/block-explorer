@@ -132,12 +132,12 @@
             <div class="stats">
                 <div class="box box-20">
                     <div class="title">Block Height</div>
-                    <div class="value">{{ $recentBlocks[0]->Height }}</div>
+                    <div class="value">{{ $recentBlocks[0]->height }}</div>
                 </div>
 
                 <div class="box box-30">
                     <div class="title">Difficulty</div>
-                    <div class="value" title="{{ $recentBlocks[0]->Difficulty }}">{{ number_format($recentBlocks[0]->Difficulty, 2, '.', '') }}</div>
+                    <div class="value" title="{{ $recentBlocks[0]->difficulty }}">{{ number_format($recentBlocks[0]->difficulty, 2, '.', '') }}</div>
                 </div>
 
                 <div class="box box-30">
@@ -170,13 +170,13 @@
 
                     <tbody>
                     @foreach($recentBlocks as $block)
-                        <tr data-height="{{ $block->Height }}" data-time="{{ $block->BlockTime }}">
-                            <td><a href="/blocks/{{ $block->Height }}">{{ $block->Height }}</a></td>
-                            <td>{{ \Carbon\Carbon::createFromTimestamp($block->BlockTime)->diffForHumans() }}</td>
-                            <td class="right">{{ round($block->BlockSize / 1024, 2) . 'KB' }}</td>
+                        <tr data-height="{{ $block->height }}" data-time="{{ $block->block_time }}">
+                            <td><a href="/blocks/{{ $block->height }}">{{ $block->height }}</a></td>
+                            <td>{{ \Carbon\Carbon::createFromTimestamp($block->block_time)->diffForHumans() }}</td>
+                            <td class="right">{{ round($block->block_size / 1024, 2) . 'KB' }}</td>
                             <td class="right">{{ $block->tx_count }}</td>
-                            <td class="right">{{ number_format($block->Difficulty, 2, '.', '') }}</td>
-                            <td class="last-cell">{{ DateTime::createFromFormat('U', $block->BlockTime)->format('d M Y H:i:s') . ' UTC' }}</td>
+                            <td class="right">{{ number_format($block->difficulty, 2, '.', '') }}</td>
+                            <td class="last-cell">{{ DateTime::createFromFormat('U', $block->block_time)->format('d M Y H:i:s') . ' UTC' }}</td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -193,7 +193,7 @@
                     @php($autoThumbText = $claim->getAutoThumbText())
                     {{--content type--}}
                     @php($ctTag = $claim->getContentTag())
-                    <div data-id="{{ $claim->claim_id }}" class="claim-box@if($idx == 5) last@endif">
+                    <div data-id="{{ $claim->claim_id }}" class="{{ 'claim-box' }}@if($idx == 5){{ ' last' }}@endif">
                         <div class="tags">
                             @if($ctTag)
                                 <div class="content-type">{{ strtoupper($ctTag) }}</div>
@@ -212,7 +212,9 @@
                         </div>
 
                         <div class="metadata">
-                            <div class="title" title="{{ $claim->claim_type == 1 ? $claim->name : ((strlen(trim($claim->title)) > 0) ? $claim->title : '') }}">{{ $claim->claim_type == 1 ? $claim->name : ((strlen(trim($claim->title)) > 0) ? $claim->title : '<em>No Title</em>') }}</div>
+                            <div class="title" title="{{ $claim->claim_type == 1 ? $claim->name : ((strlen(trim($claim->title)) > 0) ? $claim->title : '') }}">
+                                @if($claim->claim_type == 1){{ $claim->name }}@else{{ '' }}@if(strlen(trim($claim->title)) > 0){{ $claim->title }}@else<em>No Title</em>@endif{{ '' }}@endif
+                            </div>
                             <div class="link" title="{{ $claim->getLbryLink() }}"><a href="{{ $claim->getLbryLink() }}">{{ $claim->getLbryLink() }}</a></div>
 
                             <div class="clear"></div>

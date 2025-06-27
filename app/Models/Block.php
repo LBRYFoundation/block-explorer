@@ -5,55 +5,36 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @mixin Model
- * @property mixed Bits
- * @property mixed Chainwork
- * @property mixed Confirmations
- * @property mixed Difficulty
- * @property mixed Hash
- * @property mixed Height
- * @property mixed MedianTime
- * @property mixed MerkleRoot
- * @property mixed NameClaimRoot
- * @property mixed Nonce
- * @property mixed PreviousBlockHash
- * @property mixed NextBlockHash
- * @property mixed BlockSize
- * @property mixed Target
- * @property mixed BlockTime
- * @property mixed TransactionHashes
- * @property mixed Version
- * @property mixed VersionHex
+ * @property mixed id
+ * @property mixed bits
+ * @property mixed chainwork
+ * @property mixed confirmations
+ * @property mixed difficulty
+ * @property mixed hash
+ * @property mixed height
+ * @property mixed merkle_root
+ * @property mixed name_claim_root
+ * @property mixed nonce
+ * @property mixed previous_block_hash
+ * @property mixed next_block_hash
+ * @property mixed block_size
+ * @property mixed block_time
+ * @property mixed version
+ * @property mixed version_hex
+ * @property mixed tx_count
+ * @property mixed created_at
+ * @property mixed modified_at
  */
 class Block extends Model{
 
-    protected $fillable = [
-        'Bits',
-        'Chainwork',
-        'Confirmations',
-        'Difficulty',
-        'Hash',
-        'Height',
-        'MedianTime',
-        'MerkleRoot',
-        'NameClaimRoot',
-        'Nonce',
-        'PreviousBlockHash',
-        'NextBlockHash',
-        'BlockSize',
-        'Target',
-        'BlockTime',
-        'TransactionHashes',
-        'Version',
-        'VersionHex',
-    ];
-    protected $table = 'Blocks';
+    protected $table = 'block';
     public $timestamps = false;
 
     public function jsonSerialize(): array{
         return [
-            'height' => $this->Height,
-            'block_time' => $this->BlockTime,
-            'tx_count' => -1,//TODO
+            'height' => $this->height,
+            'block_time' => $this->block_time,
+            'tx_count' => $this->tx_count,
         ];
     }
 

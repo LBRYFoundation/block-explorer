@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @mixin Model
+ * @deprecated
  */
 class TagAddressRequest extends Model{
 

@@ -1,4 +1,5 @@
 @extends('layout.default')
+{{ /**@var \App\Models\Address $address*/'' }}
 
 @section('title','Address '.$address->address)
 

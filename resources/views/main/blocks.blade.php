@@ -1,7 +1,7 @@
 @extends('layout.default')
 {{ /**@var \App\Models\Block $block*/'' }}
 
-@section('title',isset($block)?('Block Height '.$block->Height):'Blocks')
+@section('title',isset($block)?('Block Height '.$block->height):'Blocks')
 
 @section('script')
     @if(isset($block))
@@ -42,16 +42,16 @@
 
     @if(isset($block))
         <div class="block-head">
-            <h3>LBRY Block {{ $block->Height }}</h3>
-            <h4>{{ $block->Hash }}</h4>
+            <h3>LBRY Block {{ $block->height }}</h3>
+            <h4>{{ $block->hash }}</h4>
         </div>
 
         <div class="block-nav">
-            @if($block->Height > 0)
-                <a class="btn btn-prev" href="/blocks/{{ ($block->Height - 1) }}">&laquo; Previous Block</a>
+            @if($block->height > 0)
+                <a class="btn btn-prev" href="/blocks/{{ ($block->height - 1) }}">&laquo; Previous Block</a>
             @endif
 
-            <a class="btn btn-next" href="/blocks/{{ $block->Height + 1 }}">Next Block &raquo;</a>
+            <a class="btn btn-next" href="/blocks/{{ $block->height + 1 }}">Next Block &raquo;</a>
 
             <div class="clear"></div>
         </div>
@@ -63,15 +63,15 @@
                 <div class="label half-width">Block Size (bytes)</div>
                 <div class="label half-width">Block Time</div>
 
-                <div class="value half-width">{{ number_format($block->BlockSize, 0, '', ',') }}</div>
-                <div class="value half-width">{{ \DateTime::createFromFormat('U', $block->BlockTime)->format('j M Y H:i:s') . ' UTC' }}</div>
+                <div class="value half-width">{{ number_format($block->block_size, 0, '', ',') }}</div>
+                <div class="value half-width">{{ \DateTime::createFromFormat('U', $block->block_time)->format('j M Y H:i:s') . ' UTC' }}</div>
 
                 <div class="clear spacer"></div>
 
                 <div class="label half-width">Bits</div>
                 <div class="label half-width">Confirmations</div>
 
-                <div class="value half-width">{{ $block->Bits }}</div>
+                <div class="value half-width">{{ $block->bits }}</div>
                 <div class="value half-width">{{ $confirmations }}</div>
 
                 <div class="clear spacer"></div>
@@ -79,20 +79,20 @@
                 <div class="label half-width">Difficulty</div>
                 <div class="label half-width">Nonce</div>
 
-                <div class="value half-width">{{ \App\Helpers\AmountHelper::format($block->Difficulty,'') }}</div>
-                <div class="value half-width">{{ $block->Nonce }}</div>
+                <div class="value half-width">{{ \App\Helpers\AmountHelper::format($block->difficulty,'') }}</div>
+                <div class="value half-width">{{ $block->nonce }}</div>
 
                 <div class="clear spacer"></div>
 
-                <div class="label">Chainwork</div> <div class="value">{{ $block->Chainwork }}</div>
+                <div class="label">Chainwork</div> <div class="value">{{ $block->chainwork }}</div>
 
                 <div class="spacer"></div>
 
-                <div class="label">MerkleRoot</div> <div class="value">{{ $block->MerkleRoot }}</div>
+                <div class="label">MerkleRoot</div> <div class="value">{{ $block->merkle_root }}</div>
 
                 <div class="spacer"></div>
 
-                <div class="label">NameClaimRoot</div> <div class="value">{{ $block->NameClaimRoot }}</div>
+                <div class="label">NameClaimRoot</div> <div class="value">{{ $block->name_claim_root }}</div>
 
                 <!--
             <div class="spacer"></div>
@@ -102,7 +102,7 @@
 
                 <div class="spacer"></div>
 
-                <div class="label">Version</div> <div class="value">{{ $block->Version }}</div>
+                <div class="label">Version</div> <div class="value">{{ $block->version }}</div>
             </div>
 
             <div class="block-transactions">
@@ -184,13 +184,13 @@
                 <tbody>
                 @foreach($blocks as $block)
                     <tr>
-                        <td class="right"><a href="/blocks/{{ $block->Height }}">{{ $block->Height }}</a></td>
-                        <td class="pad-left">{{ number_format($block->Difficulty, 8, '.', '') }}</td>
-                        <td class="right">{{ number_format((($currentBlock->Height - $block->Height) + 1), 0, '', ',') }}</td>
+                        <td class="right"><a href="/blocks/{{ $block->height }}">{{ $block->height }}</a></td>
+                        <td class="pad-left">{{ number_format($block->difficulty, 8, '.', '') }}</td>
+                        <td class="right">{{ number_format((($currentBlock->height - $block->height) + 1), 0, '', ',') }}</td>
                         <td class="right">{{ $block->tx_count }}</td>
-                        <td class="right">{{ round($block->BlockSize / 1024, 2) . 'KB' }}</td>
-                        <td class="right pad-left">{{ $block->Nonce }}</td>
-                        <td class="pad-left">{{ \DateTime::createFromFormat('U', $block->BlockTime)->format('d M Y H:i:s') }} UTC</td>
+                        <td class="right">{{ round($block->block_size / 1024, 2) . 'KB' }}</td>
+                        <td class="right pad-left">{{ $block->nonce }}</td>
+                        <td class="pad-left">{{ \DateTime::createFromFormat('U', $block->block_time)->format('d M Y H:i:s') }} UTC</td>
                     </tr>
                 @endforeach
                 </tbody>

@@ -1,6 +1,6 @@
 @extends('layout.default')
 
-@section('title','Transaction '.$tx->Hash)
+@section('title','Transaction '.$tx->hash)
 
 @section('script')
     <script type="text/javascript">
@@ -111,7 +111,7 @@
                                     <a id="{{ $addr->address }}"></a>
                                 @endif
 
-                                <div><span class="value">{{ $this->Amount->format($in->value) }} LBC</span> from</div>
+                                <div><span class="value">{{ \App\Helpers\AmountHelper::format($in->value) }} LBC</span> from</div>
                                 <div class="address">
                                     <a href="/address/{{ $addr->address }}">{{ $addr->address }}</a>
                                     (<a class="output-link" href="/tx/{{ $in->prevout_hash }}#output-{{ $in->prevout_n }}">output</a>)

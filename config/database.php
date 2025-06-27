@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => 'default',
+    'default' => 'chainquery',
 
     /*
     |--------------------------------------------------------------------------
@@ -29,31 +29,13 @@ return [
     */
 
     'connections' => [
-        'default' => [
+        'chainquery' => [
             'driver' => 'mysql',
-            'host' => env('DB_DEFAULT_HOST', '127.0.0.1'),
-            'port' => env('DB_DEFAULT_PORT', '3306'),
-            'database' => env('DB_DEFAULT_DATABASE', 'laravel'),
-            'username' => env('DB_DEFAULT_USERNAME', 'root'),
-            'password' => env('DB_DEFAULT_PASSWORD', ''),
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
-        ],
-
-        'localdb' => [
-            'driver' => 'mysql',
-            'host' => env('DB_LOCAL_HOST', '127.0.0.1'),
-            'port' => env('DB_LOCAL_PORT', '3306'),
-            'database' => env('DB_LOCAL_DATABASE', 'laravel'),
-            'username' => env('DB_LOCAL_USERNAME', 'root'),
-            'password' => env('DB_LOCAL_PASSWORD', ''),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',

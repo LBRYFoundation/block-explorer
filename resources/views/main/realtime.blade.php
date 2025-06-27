@@ -133,9 +133,9 @@
 
                 <tbody>
                 @foreach($blocks as $block)
-                    <tr data-height="{{ $block->Height }}" data-time="{{ $block->BlockTime }}">
-                        <td><a href="/blocks/{{ $block->Height }}" target="_blank">{{ $block->Height }}</a></td>
-                        <td>{{ \Carbon\Carbon::createFromTimestamp($block->BlockTime)->diffForHumans() }}</td>
+                    <tr data-height="{{ $block->height }}" data-time="{{ $block->block_time }}">
+                        <td><a href="/blocks/{{ $block->height }}" target="_blank">{{ $block->height }}</a></td>
+                        <td>{{ \Carbon\Carbon::createFromTimestamp($block->block_time)->diffForHumans() }}</td>
                         <td class="right">{{ $block->tx_count }}</td>
                     </tr>
                 @endforeach
