@@ -18,8 +18,10 @@ RUN docker-php-ext-enable redis
 
 RUN docker-php-ext-install bcmath
 RUN docker-php-ext-install gmp
+RUN docker-php-ext-install mysqli
 RUN docker-php-ext-install opcache
 RUN docker-php-ext-install pdo
+RUN docker-php-ext-install pdo_mysql
 
 # Delete PHPize packages
 RUN apk del --no-network --no-cache --purge .phpize
@@ -59,4 +61,4 @@ RUN mv opcache.ini /usr/local/etc/php/conf.d/
 VOLUME /var/www/html/storage/framework/cache/data
 
 # Cache project and Start PHP-FPM and NGINX
-CMD php artisan optimize; php artisan event:cache; php artisan view:cache; sh -c "php artisan queue:work &"; php-fpm -D; nginx -g "daemon off;"
+CMD php artisan optimize; php artisan event:cache; php artisan view:cache; php-fpm -D; nginx -g "daemon off;"
