@@ -56,10 +56,7 @@ RUN mv php.ini /usr/local/etc/php/conf.d/
 # Setup Opcache
 RUN mv opcache.ini /usr/local/etc/php/conf.d/
 
-# Setup CRON
-RUN echo -e "*\t*\t*\t*\t*\tcd /var/www/html && php artisan schedule:run >> /dev/null 2>&1" >> /var/spool/cron/crontabs/root
-
 VOLUME /var/www/html/storage/framework/cache/data
 
 # Cache project and Start PHP-FPM and NGINX
-CMD php artisan optimize; php artisan event:cache; php artisan view:cache; sh -c "php artisan queue:work &"; n crond; nginx -g "daemon off;"
+CMD php artisan optimize; php artisan event:cache; php artisan view:cache; sh -c "php artisan queue:work &"; nginx -g "daemon off;"
