@@ -115,12 +115,12 @@
 
             <div class="box">
                 <div class="title">Received (LBC)</div>
-                <div class="value">{{ \App\Helpers\AmountHelper::format(($totalReceived) }}</div>
+                <div class="value">{{ \App\Helpers\AmountHelper::format($totalReceived) }}</div>
             </div>
 
             <div class="box last">
                 <div class="title">Sent (LBC)</div>
-                <div class="value">{{ \App\Helpers\AmountHelper::format(($totalSent) }}</div>
+                <div class="value">{{ \App\Helpers\AmountHelper::format($totalSent) }}</div>
             </div>
 
             <div class="clear"></div>

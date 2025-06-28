@@ -97,7 +97,7 @@
                 <div class="subtitle">{{ $tx->input_count }} input{{ $tx->input_count === 1 ? '' : 's' }}</div>
                 @php($setAddressIds = [])
                 @foreach($inputs as $in)
-                    <div id="input-{{ $in->id }}" class="input @if(isset($in->input_addresses) && count($in->input_addresses) > 0 && $in->input_addresses[0]->address == $sourceAddress)is-source@endif">
+                    <div id="input-{{ $in->id }}" class="{{ 'input ' }}@if(isset($in->input_addresses) && count($in->input_addresses) > 0 && $in->input_addresses[0]->address == $sourceAddress){{ 'is-source' }}@endif">
                         @if($in->is_coinbase)
                             <div>Block Reward (New Coins)</div>
                         @else
@@ -132,7 +132,7 @@
             </div>
 
             <div class="divider">
-                <img src="/img/right-arrow.png" alt="" />
+                <img src="{{ '/img/right-arrow.png' }}" alt="->" />
             </div>
 
             <div class="outputs">
@@ -143,7 +143,7 @@
                     @endif
                 </div>
                 @foreach($outputs as $out)
-                    <div id="output-{{ $out->vout }}" class="output @if(isset($out->output_addresses) && count($out->output_addresses) > 0 && $out->output_addresses[0]->address == $sourceAddress)is-source@endif">
+                    <div id="output-{{ $out->vout }}" class="{{ 'output ' }}@if(isset($out->output_addresses) && count($out->output_addresses) > 0 && $out->output_addresses[0]->address == $sourceAddress){{ 'is-source' }}@endif">
                         <div class="labels">
                             @if($out->Claim && ($out->IsClaim or $out->IsSupportClaim or $out->IsUpdateClaim))<a class="view-claim" href="{{ $out->Claim->getExplorerLink() }}">View</a>@endif
                             @if($out->IsSupportClaim)<div class="support">SUPPORT</div>@endif

@@ -23,6 +23,7 @@ use Endroid\QrCode\Writer\PngWriter;
 
 use Exception;
 
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
@@ -61,12 +62,13 @@ class MainController extends Controller{
 
     public function __construct(){
         $this->redis = RedisFacade::connection()->client();
-        $this->rpcUrl = config('lbry.rpc_url');
-        try {
+        try{
             $this->redis->info('mem');
-        } catch (RedisException) {
+        }catch(RedisException){
             $this->redis = null;
         }
+
+        $this->rpcUrl = config('lbry.rpc_url');
     }
 
     /**
@@ -118,7 +120,10 @@ class MainController extends Controller{
             }
         }
 
-        $lbcUsdPrice = (isset($priceInfo->price) && ($priceInfo->price > 0)) ? '$' . $priceInfo->price : 'N/A';
+        $lbcUsdPrice = 'N/A';
+        if(isset($priceInfo->price) && $priceInfo->price>0){
+            $lbcUsdPrice = '$'.$priceInfo->price;
+        }
         return $lbcUsdPrice;
     }
 
@@ -419,7 +424,7 @@ class MainController extends Controller{
             $input->input_addresses = $inputAddresses;
         }
 
-        $outputs = Output::query()->addSelect(['spend_input_hash' => 'I.transaction_hash', 'spend_input_id' => 'I.id'])->where('Outputs.transaction_id',$tx->id)->leftJoin('Inputs','id','=','Outputs.spent_by_input_id')->orderBy('Outputs.vout')->get();
+        $outputs = Output::query()->where('output.transaction_id',$tx->id)->leftJoin('input AS i','i.id','=','output.spent_by_input_id')->addSelect('output.*')->addSelect(['i.transaction_hash AS spend_input_hash','i.id AS spend_input_id'])->orderBy('output.vout')->get();
         for ($i = 0; $i < count($outputs); $i++) {
             $outputs[$i]->IsClaim = (strpos($outputs[$i]->script_pub_key_asm, 'CLAIM') > -1);
             $outputs[$i]->IsSupportClaim = (strpos($outputs[$i]->script_pub_key_asm, 'SUPPORT_CLAIM') > -1);
@@ -557,6 +562,7 @@ class MainController extends Controller{
                 'RIGHT JOIN (SELECT transaction_id, debit_amount, credit_amount FROM transaction_address ' .
                 '            WHERE address_id = ?) TA ON TA.transaction_id = T.id ' .
                 'ORDER BY transaction_time DESC LIMIT %d, %d', $offset, $pageLimit), [$address->id]);
+
             $recentTxs = $stmt->fetchAll(PDO::FETCH_OBJ);
 
             foreach($transactionAddresses as $ta) {

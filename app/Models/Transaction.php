@@ -21,6 +21,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Transaction extends Model{
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
     protected $table = 'transaction';
     public $timestamps = false;
 
