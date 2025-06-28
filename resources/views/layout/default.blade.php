@@ -19,19 +19,19 @@
     <script>try{Typekit.load({ async: true });}catch(e){}</script>
 
     <!-- Analytics -->
-    @if($_SERVER['HTTP_HOST'] === 'explorer.lbry.com')
+    @if(env('GTM_ID'))
         <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="//www.googletagmanager.com/gtag/js?id=UA-60403362-1"></script>
+        <script async src="//www.googletagmanager.com/gtag/js?id={{ env('GTM_ID') }}"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'UA-60403362-4');
+            gtag('config', '{{ env('GTM_ID') }}');
         </script>
     @endif
 
     <script type="text/javascript">
-        // handle coinomi and lbry app urls
+        // Handle Coinomi and LBRY app URLs
         var hashpart = window.location.hash;
         if (hashpart.length > 3) {
             hashpart = hashpart.substring(3);
@@ -59,7 +59,7 @@
 @yield('content')
 <footer>
     <div class="content">
-        <a href="https://lbry.com">LBRY</a>
+        <a href="https://lbry.org">LBRY</a>
 
         <div class="page-time">Page took {{ round((microtime(true) - LARAVEL_START) * 1000, 0) }}ms</div>
     </div>
