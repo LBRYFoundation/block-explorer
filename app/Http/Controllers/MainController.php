@@ -31,11 +31,12 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Redis as RedisFacade;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 use PDO;
+use Redis;
 use RedisException;
 use stdClass;
 
@@ -55,12 +56,12 @@ class MainController extends Controller{
 
     const blockedListUrl = 'https://api.odysee.com/file/list_blocked?with_claim_id=true';
 
-    protected $redis;
-    protected $rpcurl;
+    protected ?Redis $redis;
+    protected string $rpcUrl;
 
     public function __construct(){
-        $this->redis = Redis::connection()->client();
-        $this->rpcurl = config('lbry.rpc_url');
+        $this->redis = RedisFacade::connection()->client();
+        $this->rpcUrl = config('lbry.rpc_url');
         try {
             $this->redis->info('mem');
         } catch (RedisException) {
@@ -127,8 +128,8 @@ class MainController extends Controller{
      */
     public function index(): JsonResponse|Response|View{
         $lbcUsdPrice = $this->_getLatestPrice();
-        $blocks = Block::query()->select(['chainwork', 'confirmations', 'difficulty', 'hash', 'height', 'block_time', 'block_size','tx_count'])->orderByDesc('height')->limit(6)->get();
-        $claims = Claim::query()->leftJoin('claim AS c','c.claim_id','=','claim.publisher_id')->orderByDesc('claim.created_at')->limit(5)->get();
+        $blocks = Block::query()->select(['chainwork','confirmations','difficulty','hash','height','block_time','block_size','tx_count'])->orderByDesc('height')->limit(6)->get();
+        $claims = Claim::query()->leftJoin('claim AS c','c.claim_id','=','claim.publisher_id')->addSelect('claim.*')->addSelect('c.name AS publisher')->orderByDesc('claim.created_at')->limit(5)->get();
         $hashRate = $this->_formatHashRate($this->_gethashrate());
 
         return self::generateResponse('main.index',[
@@ -1003,7 +1004,7 @@ class MainController extends Controller{
     private function _gethashrate(): mixed{
         $req = ['method' => 'getnetworkhashps', 'params' => [],'id'=>rand()];
         try {
-            $res = json_decode(self::curl_json_post($this->rpcurl, json_encode($req)));
+            $res = json_decode(self::curl_json_post($this->rpcUrl, json_encode($req)));
             if (!isset($res->result)) {
                 return 0;
             }
@@ -1078,7 +1079,7 @@ class MainController extends Controller{
 
         $req = ['method' => 'gettxoutsetinfo', 'params' => [],'id'=>rand()];
         try {
-            $response = self::curl_json_post($this->rpcurl, json_encode($req));
+            $response = self::curl_json_post($this->rpcUrl, json_encode($req));
             $res = json_decode($response);
             if (!isset($res->result)) {
                 return null;
