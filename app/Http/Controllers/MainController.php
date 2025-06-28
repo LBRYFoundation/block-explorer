@@ -23,7 +23,6 @@ use Endroid\QrCode\Writer\PngWriter;
 
 use Exception;
 
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
