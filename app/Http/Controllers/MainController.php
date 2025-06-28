@@ -333,7 +333,7 @@ class MainController extends Controller{
             }
         }else{
             // finally, try exact claim name match
-            $claims = Claim::query()->distinct('claim_id')->where('name',$criteria)->orderByDesc('FIELD(bid_state,"Controlling")')->limit(10)->get();
+            $claims = Claim::query()->distinct('claim_id')->where('name',$criteria)->orderByRaw('FIELD(bid_state,"Controlling") DESC')->limit(10)->get();
             if(count($claims)===1){
                 return Redirect::to('/claims/'.$claims[0]->claim_id);
             }

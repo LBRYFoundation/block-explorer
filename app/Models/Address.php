@@ -15,6 +15,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Address extends Model{
 
+    protected $casts = [
+        'first_seen' => 'datetime',
+    ];
     protected $table = 'address';
     public $timestamps = false;
 
