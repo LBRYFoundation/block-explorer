@@ -42,6 +42,10 @@ WORKDIR /var/www/html
 COPY . .
 RUN mv nginx.conf /etc/nginx/http.d/default.conf
 
+# Redirect NGINX logs
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
 # Install project using Composer
 RUN --mount=type=cache,target=/root/.composer composer install --no-interaction --optimize-autoloader --no-dev
 
