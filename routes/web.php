@@ -37,6 +37,6 @@ Route::prefix('/')->group(static function(): void{
     Route::redirect('/find',					'https://mempool.lbry.org');
     Route::redirect('/realtime',				'https://mempool.lbry.org');
     Route::redirect('/stats',					'https://mempool.lbry.org');
-    Route::redirect('/tx/{transaction?}',		'https://mempool.lbry.org/nl/tx/{transaction}')->where('transaction','.*');
+    Route::redirect('/tx/{transaction?}',		'https://mempool.lbry.org/tx/{transaction}')->where('transaction','.*');
     Route::redirect('/qr/{data?}',				'https://mempool.lbry.org')->where('data','.*');
 });
