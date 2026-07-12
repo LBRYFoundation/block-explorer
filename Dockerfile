@@ -1,4 +1,4 @@
-FROM php:8.4.7-fpm-alpine
+FROM php:8.4.23-fpm-alpine
 
 # Install PHPize packages
 RUN apk add --no-cache --virtual .phpize $PHPIZE_DEPS
