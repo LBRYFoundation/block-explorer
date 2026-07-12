@@ -10,6 +10,7 @@
         "ext-bcmath": "*",
         "ext-curl": "*",
         "ext-gmp": "*",
+        "ext-json": "*",
         "ext-pdo": "*",
         "ext-redis": "*",
         "cakephp/utility": "^5.2",
