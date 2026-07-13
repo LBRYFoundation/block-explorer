@@ -30,7 +30,7 @@ Route::prefix('/')->group(static function(): void{
 
         $canonicalURL = $json['result']['items'][0]['canonical_url'] ?? null;
         if($canonicalURL){
-            return redirect('https://nova.lbry.org/claim/'.$canonicalURL);
+            return redirect('https://nova.lbry.org/claim/'.str_replace('#',':',$canonicalURL));
         }
         return redirect('https://nova.lbry.org');
     })->where('claim','.*');
