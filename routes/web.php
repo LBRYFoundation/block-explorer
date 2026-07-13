@@ -19,7 +19,7 @@ Route::prefix('/')->group(static function(): void{
             'id' => rand(),
             'method' => 'claim_search',
             'params' => [
-                'claim_id' => bin2hex(strrev(hex2bin($claim))),
+                'claim_id' => $claim,
             ],
         ]));
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
